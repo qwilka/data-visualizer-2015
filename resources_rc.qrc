@@ -1,0 +1,14 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>resources/new.png</file>
+    <file>resources/save.png</file>
+    <file>resources/undo.png</file>
+    <file>resources/open.png</file>
+    <file>resources/document-open.svg</file>
+    <file>resources/system-shutdown-panel-restart.svg</file>
+    <file>resources/application-vnd.ms-powerpoint.svg</file>
+    <file>resources/typeZCoordinate.png</file>
+    <file>resources/text-x-script.png</file>
+    <file>resources/MBEdata.txt</file>
+</qresource>
+</RCC>
