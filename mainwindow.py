@@ -16,25 +16,10 @@ import pprint
 #import pickle
 from functools import partial
 
-# PS = False
-
-# if PS:
-#     from PySide import QtCore
-#     from PySide import QtGui
-# else:
-#     import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
-#     sip.setapi('QDate', 2)
-#     sip.setapi('QDateTime', 2)
-#     sip.setapi('QString', 2)
-#     sip.setapi('QtextStream', 2)
-#     sip.setapi('Qtime', 2)
-#     sip.setapi('QUrl', 2)
-#     sip.setapi('QVariant', 2)
-#     from PyQt4 import QtCore
-#     from PyQt4 import QtGui
 
 from PyQt5.QtWidgets import ( QMainWindow, QMessageBox, QFileDialog, 
-                             QDockWidget, QWidget, QVBoxLayout )
+    QDockWidget, QWidget, QVBoxLayout, QItemDelegate, QGroupBox,
+    QFormLayout, QLabel, QLineEdit, QSplitter, QScrollArea, QAction)
 from PyQt5.QtCore import Qt, QCoreApplication
 from PyQt5 import QtGui 
 
@@ -71,12 +56,12 @@ class MainWindow(QMainWindow):
         ##self.dataTree.rejected.connect(self.dataTreePos)
         ##self.dataTree.hide()
 
-        vsplitter = QtGui.QSplitter(QtCore.Qt.Vertical)
+        vsplitter = QSplitter(Qt.Vertical)
         vsplitter.addWidget(self.datatree)
         vsplitter.addWidget(self.propseditor)
         vsplitter.setSizes ([250, 250])
         vsplitter.setStretchFactor(1, 1)
-        hsplitter = QtGui.QSplitter(QtCore.Qt.Horizontal)
+        hsplitter = QSplitter(Qt.Horizontal)
         hsplitter.addWidget(vsplitter)
         hsplitter.addWidget(self.vtkview)
         hsplitter.setStretchFactor(1, 10)
@@ -108,30 +93,30 @@ class MainWindow(QMainWindow):
         viewMenu.addAction(self.showTreeAct)"""
 
     def createActions(self):
-        self.quitAct = QtGui.QAction(
+        self.quitAct = QAction(
                 "&Quit", self, shortcut="Ctrl+Q",  # shortcut=QtGui.QKeySequence.Quit
                 statusTip="Quit the application", triggered=self.close)
                 
-        self.openFileAct = QtGui.QAction(                                 
+        self.openFileAct = QAction(                                 
                 "open file", self, shortcut=QtGui.QKeySequence.Open,
                 statusTip="Open a PLY file", triggered=self.openFile)
 
-        self.importFileAct = QtGui.QAction(                                 
+        self.importFileAct = QAction(                                 
                 "import file", self, 
                 statusTip="import a file", triggered=self.importFile)
 
-        self.saveFileAct = QtGui.QAction(                         
+        self.saveFileAct = QAction(                         
                 "save", self, shortcut=QtGui.QKeySequence.Save,
                 statusTip="save current state", triggered=self.saveFile)
 
-        self.closeFileAct = QtGui.QAction(                         
+        self.closeFileAct = QAction(                         
                 "close", self, shortcut=QtGui.QKeySequence.Close,
                 statusTip="close current file after saving", triggered=self.closeFile)
 
 
     def openFile(self, fpath=None, replace=True):
         if not fpath:
-            fpath = QtGui.QFileDialog.getOpenFileName(self, 'Open file', 
+            fpath = QFileDialog.getOpenFileName(self, 'Open file', 
                     self.workdir, "JSON (*.json);;All files (*.*)")
             if isinstance(fpath, tuple):  # possible bug in pyside
                 fpath = str(fpath[0])
@@ -150,7 +135,7 @@ class MainWindow(QMainWindow):
             return
         if replace:
             reply = self.closeFile()  
-            if reply == QtGui.QMessageBox.Cancel:
+            if reply == QMessageBox.Cancel:
                 return
             self.openfilename = fpath
             self.setWindowTitle( ("VisinumVTKviewer - {}").format(
@@ -160,7 +145,7 @@ class MainWindow(QMainWindow):
 
     def importFile(self, fpath=None):
         if not fpath:
-            fpath = QtGui.QFileDialog.getOpenFileName(self, 'Import file', 
+            fpath = QFileDialog.getOpenFileName(self, 'Import file', 
                     self.workdir, "PLY (*.ply);;JSON (*.json);;All files (*.*)")
             if isinstance(fpath, tuple):
                 fpath = str(fpath[0])
@@ -184,7 +169,7 @@ class MainWindow(QMainWindow):
         model = self.datatree.treeview.model()
         fpath = self.openfilename
         if not fpath or not os.path.isfile(fpath):
-            fpath = QtGui.QFileDialog.getSaveFileName(self, 'specify file to save', 
+            fpath = QFileDialog.getSaveFileName(self, 'specify file to save', 
                 self.workdir, "JSON (*.json);;All files (*.*)")
             logger.debug("saveFile filepath= %s %s" % (str(type(fpath)), fpath) )
             if isinstance(fpath, tuple):
@@ -204,15 +189,14 @@ class MainWindow(QMainWindow):
     def closeFile(self):
         model = self.datatree.treeview.model()
         if model and model.dirty:
-            reply = QtGui.QMessageBox.question(self, 'Message',
+            reply = QMessageBox.question(self, 'Message',
                      "There are unsaved changes. " +
                      "Do you want to save the changes, " +
                      "or close and discard the changes?",
-                     QtGui.QMessageBox.Save, QtGui.QMessageBox.Discard, 
-                     QtGui.QMessageBox.Cancel)
-            if reply == QtGui.QMessageBox.Cancel:
-                return QtGui.QMessageBox.Cancel
-            if reply == QtGui.QMessageBox.Save:
+                     QMessageBox.Save, QMessageBox.Close)
+            if reply == QMessageBox.Cancel:
+                return QMessageBox.Cancel
+            if reply == QMessageBox.Save:
                 self.saveFile()
                 model.dirty = False
         self.datatree.treeview.setModel(None)    # setModel(None) setup_empty_tree()
@@ -251,21 +235,21 @@ class MainWindow(QMainWindow):
         model = self.datatree.treeview.model()
         if model and model.dirty:
             reply = self.closeFile()
-            if reply == QtGui.QMessageBox.Cancel:
+            if reply == QMessageBox.Cancel:
                 event.ignore()
         else:
             quit_msg = "Are you sure you want to exit the program?"
-            reply = QtGui.QMessageBox.question(self, 'Message', 
-                             quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            reply = QMessageBox.question(self, 'Message', 
+                             quit_msg, QMessageBox.Yes, QMessageBox.No)
         
-            if reply == QtGui.QMessageBox.Yes:
+            if reply == QMessageBox.Yes:
                 event.accept()
             else:
                 event.ignore()
 
     def importPLY(self, fpath=None):
         if not fpath or not os.path.isfile(fpath):
-            fpath=QtGui.QFileDialog.getOpenFileName(self,'Open PLY','.',"PLY files (*.ply);;All files (*.*)")
+            fpath=QFileDialog.getOpenFileName(self,'Open PLY','.',"PLY files (*.ply);;All files (*.*)")
         if not fpath:
             return
         #self.vtkview.addPLYactor(fpath)
@@ -281,7 +265,7 @@ class MainWindow(QMainWindow):
         self.vtkview.showScene()
  
        
-class PropsEditor(QtGui.QWidget):
+class PropsEditor(QWidget):
 
     def __init__(self, parent=None):
         super(PropsEditor, self).__init__(parent)
@@ -289,47 +273,47 @@ class PropsEditor(QtGui.QWidget):
         self.setupLayout()
 
     def setupLayout(self):
-        groupbox = QtGui.QGroupBox('edit data')
-        formlayout = QtGui.QFormLayout()
-        self.label_name = QtGui.QLabel('name')
-        self.lineedit_name = QtGui.QLineEdit("no data here")
+        groupbox = QGroupBox('edit data')
+        formlayout = QFormLayout()
+        self.label_name = QLabel('name')
+        self.lineedit_name = QLineEdit("no data here")
         self.lineedit_name.setObjectName('name')
         formlayout.addRow(self.label_name, self.lineedit_name)
-        self.label_ftype = QtGui.QLabel('file format')
-        self.lineedit_ftype = QtGui.QLineEdit("no data here")
+        self.label_ftype = QLabel('file format')
+        self.lineedit_ftype = QLineEdit("no data here")
         self.lineedit_ftype.setObjectName('ftype')
         formlayout.addRow(self.label_ftype, self.lineedit_ftype)
-        self.label_dtype = QtGui.QLabel('data type')
-        self.lineedit_dtype = QtGui.QLineEdit("no data here")
+        self.label_dtype = QLabel('data type')
+        self.lineedit_dtype = QLineEdit("no data here")
         self.lineedit_dtype.setObjectName('dtype')
         formlayout.addRow(self.label_dtype, self.lineedit_dtype)
-        self.label_stype = QtGui.QLabel('structure type')
-        self.lineedit_stype = QtGui.QLineEdit("no data here")
+        self.label_stype = QLabel('structure type')
+        self.lineedit_stype = QLineEdit("no data here")
         self.lineedit_stype.setObjectName('stype')
         formlayout.addRow(self.label_stype, self.lineedit_stype)      
-        self.label_fpath = QtGui.QLabel('file path')
-        self.lineedit_fpath = QtGui.QLineEdit("no data here")
+        self.label_fpath = QLabel('file path')
+        self.lineedit_fpath = QLineEdit("no data here")
         self.lineedit_fpath.setObjectName('fpath')
         formlayout.addRow(self.label_fpath, self.lineedit_fpath)
-        self.label_timestamp = QtGui.QLabel('timestamp')
-        self.lineedit_timestamp = QtGui.QLineEdit("no data here")
+        self.label_timestamp = QLabel('timestamp')
+        self.lineedit_timestamp = QLineEdit("no data here")
         self.lineedit_timestamp.setReadOnly(True)
         self.lineedit_timestamp.setObjectName('timestamp')
         formlayout.addRow(self.label_timestamp, self.lineedit_timestamp)
-        self.label_UUID = QtGui.QLabel('UUID')
-        self.lineedit_UUID = QtGui.QLineEdit("no data here")
+        self.label_UUID = QLabel('UUID')
+        self.lineedit_UUID = QLineEdit("no data here")
         self.lineedit_UUID.setObjectName('UUID')
         formlayout.addRow(self.label_UUID, self.lineedit_UUID)
-        self.label_datadict = QtGui.QLabel('data dictionary')
-        self.lineedit_datadict = QtGui.QLineEdit("no data here")
+        self.label_datadict = QLabel('data dictionary')
+        self.lineedit_datadict = QLineEdit("no data here")
         self.lineedit_datadict.setObjectName("datadict")
         formlayout.addRow(self.label_datadict, self.lineedit_datadict)
         groupbox.setLayout(formlayout)
-        scroll = QtGui.QScrollArea()
+        scroll = QScrollArea()
         scroll.setWidget(groupbox)
         scroll.setWidgetResizable(True)
         #scroll.setFixedHeight(400)
-        layout = QtGui.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(scroll)
         self.setLayout(layout)
@@ -366,16 +350,16 @@ class PropsEditor(QtGui.QWidget):
 
 
 
-class PropsEditDelegate(QtGui.QItemDelegate):
+class PropsEditDelegate(QItemDelegate):
     #http://www.qtcentre.org/threads/41409-PyQt-QTableView-with-comboBox
     def __init__(self, parent):
         super(PropsEditDelegate, self).__init__(parent)
 
     def setEditorData(self, editor, idx):
         if editor.objectName() in ['ftype', 'dtype', 'stype', 'fpath', 'UUID', 'timestamp']:
-            modeldata = idx.data(QtCore.Qt.DisplayRole)
+            modeldata = idx.data(Qt.DisplayRole)
             if hasattr(modeldata, "toPyObject"):
-                dict_ = idx.data(QtCore.Qt.DisplayRole).toPyObject()
+                dict_ = idx.data(Qt.DisplayRole).toPyObject()
             else:
                 dict_ = eval(modeldata)
             if editor.objectName() in dict_:
@@ -386,14 +370,14 @@ class PropsEditDelegate(QtGui.QItemDelegate):
             else:
                 editor.setText(editor.objectName() + " not set")
         else:
-            QtGui.QItemDelegate.setEditorData(self, editor, idx)
+            QItemDelegate.setEditorData(self, editor, idx)
 
     def setModelData(self, editor, model, idx):
         # operate on model here depending on index or call default delegate:
         if editor.objectName() in ['ftype', 'dtype', 'stype', 'fpath', 'UUID']:
-            modeldata = idx.data(QtCore.Qt.DisplayRole)
+            modeldata = idx.data(Qt.DisplayRole)
             if hasattr(modeldata, "toPyObject"):
-                dict_ = idx.data(QtCore.Qt.DisplayRole).toPyObject()
+                dict_ = idx.data(Qt.DisplayRole).toPyObject()
             else:
                 dict_ = eval(modeldata)
             newvalue = editor.text()
@@ -402,7 +386,7 @@ class PropsEditDelegate(QtGui.QItemDelegate):
         elif editor.objectName() in ['timestamp']:
             return
         else:
-            QtGui.QItemDelegate.setModelData(self, editor, model, idx)
+            QItemDelegate.setModelData(self, editor, model, idx)
 
 
 def icon_solid_fill(R=0, G=0, B=0, size=26):

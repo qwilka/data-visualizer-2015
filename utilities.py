@@ -144,9 +144,9 @@ def setup_logger(logfile=None, lvl=logging.INFO,
     logger = logging.getLogger("")
     logger.setLevel(lvl)
     if logfile:
-		fh = logging.FileHandler(logfile, mode='w')
+        fh = logging.FileHandler(logfile, mode='w')
     else:
-		fh = logging.StreamHandler(stream=sys.stdout)
+        fh = logging.StreamHandler(stream=sys.stdout)
     formatter = logging.Formatter(frmt)
     fh.setFormatter(formatter)
     logger.addHandler(fh)

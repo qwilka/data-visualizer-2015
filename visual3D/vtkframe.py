@@ -3,7 +3,7 @@ Copyright © 2020 Stephen McEntee
 Licensed under the MIT license. 
 See LICENSE file for details https://github.com/qwilka/data-visualizer-2015/blob/master/LICENSE
 """
-
+import copy
 import sys
 import os
 import json
@@ -356,13 +356,15 @@ class VtkQtFrame(QWidget):   # QWidget   QtGui.QFrame
 
 
     def clearData(self):
-        #while self._actors:
-        #    self.ren.RemoveActor(self._actors.pop())
-        for k in self._actors.keys(): 
-            #if "actor" in self._actors[k]:
-            #    self.ren.RemoveActor( self._actors[k]["actor"])
-            self.ren.RemoveActor( self._actors[k] )
-            del self._actors[k]
+        while self._actors:
+            for k in self._actors.keys():
+                self.ren.RemoveActor(self._actors.pop(k))
+                break
+        # for k in self._actors.keys(): # RuntimeError: dictionary changed size during iteration
+        #     #if "actor" in self._actors[k]:
+        #     #    self.ren.RemoveActor( self._actors[k]["actor"])
+        #     self.ren.RemoveActor( self._actors[k] )
+        #     del self._actors[k]
         self.viewPlan()
         self.ren.ResetCamera()
         if hasattr(self, "_dataMapper"):
@@ -375,7 +377,7 @@ class VtkQtFrame(QWidget):   # QWidget   QtGui.QFrame
         for d_ in gener:
             if 'UUID' not in d_ or d_['UUID'] in self._actors:
                 continue
-            if d_['ftype'].upper() == 'PLY':
+            if 'ftype' in d_ and d_['ftype'].upper() == 'PLY':
                 self.importActor(d_)
         self.showScene()
 
