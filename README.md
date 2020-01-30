@@ -1,6 +1,6 @@
 # data-visualizer-2015
 
 #### usage
-Currently porting over old Python2 code.
+Requires Python 3.4+, PyQt, vtk
 
-Planning to update to Python 3.7
+python mainwindow.py
