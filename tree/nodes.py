@@ -1,16 +1,10 @@
-# -*- coding: utf-8
 """
 Copyright © 2020 Stephen McEntee
 Licensed under the MIT license. 
 See LICENSE file for details https://github.com/qwilka/data-visualizer-2015/blob/master/LICENSE
 """
-from __future__ import division
-from __future__ import print_function
-#from __future__ import unicode_literals # causes problems for drag/drop when tree contrains unicode characters (pickle problem)
-from future_builtins import *
 
-
-class Node(object):
+class Node:
 
     def __init__(self, name, parent=None, data=None):
         self._name = name
@@ -80,11 +74,13 @@ class Node(object):
     def setData(self, colidx, value):
         if colidx is 0:
             if hasattr(value, 'toPyObject'):
-                self._name = str(value.toPyObject())
+                #self._name = str(value.toPyObject())
+                self._name = str(value)
             else:
                 self._name = unicode(value)  
         if colidx is 1:
-            self._data[0] = str(value.toPyObject())
+            #self._data[0] = str(value.toPyObject())
+            self._data[0] = str(value)
         """try:
             self._data[colidx] = value
         except IndexError:
@@ -95,6 +91,16 @@ class Node(object):
         def fset(self, value): self._name = value
         return locals()
     name = property(**name())
+
+    def to_dict(self): 
+        dict_ = {"name":self._name}
+        dict_.update({"_data":self._data})
+        if self._childs:
+            dict_["_childs"] = []
+            for child in self._childs:
+                dd = child.to_dict()
+                dict_["_childs"].append(dd)
+        return dict_ 
 
 
 class ListDictNode(Node):
@@ -122,8 +128,8 @@ class ListDictNode(Node):
     def setData(self, column, value):
         if column is 0:
             if hasattr(value, 'toPyObject'):
-                self._name = str(value.toPyObject())
-                #self._data["name"] = str(value.toPyObject())  
+                #self._name = str(value.toPyObject())
+                self._name = str(value)  
             else:
                 self._name = unicode(value)
                 #self._data["name"] = str(value)       

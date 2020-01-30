@@ -1,2 +1,20 @@
 
+pyrcc5 -o resources_rc.py resources_rc.qrc
+
+
+https://medium.com/@ramrajchandradevan/python-init-py-modular-imports-81b746e58aae
+https://stackoverflow.com/questions/5286210/is-there-a-way-to-access-parent-modules-in-python
+
+tutorials
+=========
+https://www.riverbankcomputing.com/static/Docs/PyQt5/index.html
+https://doc.qt.io/qt-5/index.html
+http://zetcode.com/gui/pyqt5/
+https://pythonspot.com/pyqt5/
+https://www.tutorialspoint.com/pyqt/index.htm
+
+
+VTK
+====
+https://stackoverflow.com/questions/48105646/embedding-vtk-object-in-pyqt5-window
 

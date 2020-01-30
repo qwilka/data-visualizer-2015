@@ -1,60 +1,60 @@
-# -*- coding: utf-8
 """
 Copyright © 2020 Stephen McEntee
 Licensed under the MIT license. 
 See LICENSE file for details https://github.com/qwilka/data-visualizer-2015/blob/master/LICENSE
 """
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from future_builtins import *
 
 import sys
 import os
 import json
 import logging
 
-PS = False
+# PS = False
 
-if PS:
-    from PySide import QtCore
-    from PySide import QtGui
-    from QVTKRenderWindowInteractor_PS import QVTKRenderWindowInteractor
-else:
-    import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
-    sip.setapi('QDate', 2)
-    sip.setapi('QDateTime', 2)
-    sip.setapi('QString', 2)
-    sip.setapi('QtextStream', 2)
-    sip.setapi('Qtime', 2)
-    sip.setapi('QUrl', 2)
-    sip.setapi('QVariant', 2)
-    from PyQt4 import QtCore
-    from PyQt4 import QtGui
-    from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+# if PS:
+#     from PySide import QtCore
+#     from PySide import QtGui
+#     from QVTKRenderWindowInteractor_PS import QVTKRenderWindowInteractor
+# else:
+#     import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
+#     sip.setapi('QDate', 2)
+#     sip.setapi('QDateTime', 2)
+#     sip.setapi('QString', 2)
+#     sip.setapi('QtextStream', 2)
+#     sip.setapi('Qtime', 2)
+#     sip.setapi('QUrl', 2)
+#     sip.setapi('QVariant', 2)
+#     from PyQt4 import QtCore
+#     from PyQt4 import QtGui
+#     from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QAction
+from PyQt5.QtCore import pyqtSlot, QTimer
 
 import vtk
+from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import numpy as np
 
-from ..tree.nodes import traverse_tree_yield_data
+#from ..tree.nodes import traverse_tree_yield_data
+from tree.nodes import traverse_tree_yield_data
 
 logger = logging.getLogger(__name__)
 
 
-class VtkQtFrame(QtGui.QWidget):   # QWidget   QtGui.QFrame
+class VtkQtFrame(QWidget):   # QWidget   QtGui.QFrame
     #keyPressed = QtCore.pyqtSignal()
     #http://www.paraview.org/Wiki/VTK/Examples/Python/Widgets/EmbedPyQt   Why use a QFrame to embed vtk? 
     def __init__(self, parent=None):
-        super(VtkQtFrame, self).__init__(parent)
+        super().__init__(parent)
         self._actors = {}
         #self._state = {"_childs":[]}
         
 
-        self.layout = QtGui.QVBoxLayout(self)
+        self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
         
-        self.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
     
         self.ren = vtk.vtkRenderer()   
         self.ren.SetBackground(0.75, 0.6, 0.8)
@@ -91,7 +91,7 @@ class VtkQtFrame(QtGui.QWidget):   # QWidget   QtGui.QFrame
         # Must wait until Qt event loop starts before rendering VTK window
         # otherwise get a segfault
         # zero timeout, wait until event loop starts
-        QtCore.QTimer.singleShot(0, self.renderVTKwindow)  
+        QTimer.singleShot(0, self.renderVTKwindow)  
         self.iren.GetInteractorStyle().setParent(self) # crazy, but necessary to retain reference to widget in MyInteractorStyle       
         
         self.createActions()
@@ -203,7 +203,7 @@ class VtkQtFrame(QtGui.QWidget):   # QWidget   QtGui.QFrame
         else:
             logger.warning("VTKframe cannot remove actor %s" % actor_name)
 
-    @QtCore.pyqtSlot(str)   # http://stackoverflow.com/questions/2585442/sending-custom-pyqt-signals
+    @pyqtSlot(str)   # http://stackoverflow.com/questions/2585442/sending-custom-pyqt-signals
     def createBoundingBox_UUID(self, UUID):
         if UUID in self._actors:
             self.createBoundingBox(self._actors[UUID], colour=(1.0, 1.0, 0))
@@ -302,19 +302,19 @@ class VtkQtFrame(QtGui.QWidget):   # QWidget   QtGui.QFrame
         self._actors["scalarbar"] = scalarBar
 
     def createActions(self):
-        self.openFileAct = QtGui.QAction(                                 #QtGui.QIcon(':/resources/application-vnd.ms-powerpoint.svg'),
+        self.openFileAct = QAction(                                 #QtGui.QIcon(':/resources/application-vnd.ms-powerpoint.svg'),
                 "open file", self, shortcut="o",
                 statusTip="Open a PLY file", triggered=self.openFile)
 
-        self.addTriadAct = QtGui.QAction(                                 #QtGui.QIcon(':/resources/application-vnd.ms-powerpoint.svg'),
+        self.addTriadAct = QAction(                                 #QtGui.QIcon(':/resources/application-vnd.ms-powerpoint.svg'),
                 "add axes triad", self, shortcut="0",
                 statusTip="add axes triad", triggered=self.addAxes)
 
-        self.viewPlanAct = QtGui.QAction(                                 #QtGui.QIcon(':/resources/application-vnd.ms-powerpoint.svg'),
+        self.viewPlanAct = QAction(                                 #QtGui.QIcon(':/resources/application-vnd.ms-powerpoint.svg'),
                 "plan view", self, shortcut="1",
                 statusTip="view in plan (from above)", triggered=self.viewPlan)
 
-        self.saveStateAct = QtGui.QAction(                                 #QtGui.QIcon(':/resources/application-vnd.ms-powerpoint.svg'),
+        self.saveStateAct = QAction(                                 #QtGui.QIcon(':/resources/application-vnd.ms-powerpoint.svg'),
                 "save", self, shortcut="u",
                 statusTip="save current state", triggered=self.saveState)
 
@@ -472,7 +472,8 @@ class MyInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
 
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    from PyQt5.QtWidgets import QApplication
+    app = QApplication(sys.argv)
     visVtkWidg =  VtkQtFrame()     
     visVtkWidg.show()
     sys.exit(app.exec_())

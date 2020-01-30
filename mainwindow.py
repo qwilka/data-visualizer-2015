@@ -1,13 +1,12 @@
-# -*- coding: utf-8
 """
 Copyright © 2020 Stephen McEntee
 Licensed under the MIT license. 
 See LICENSE file for details https://github.com/qwilka/data-visualizer-2015/blob/master/LICENSE
 """
-from __future__ import division
-from __future__ import print_function
-#from __future__ import unicode_literals # causes problems for drag/drop when tree contrains unicode characters (pickle problem)
-from future_builtins import *
+# from __future__ import division
+# from __future__ import print_function
+# #from __future__ import unicode_literals # causes problems for drag/drop when tree contrains unicode characters (pickle problem)
+# from future_builtins import *
 
 import sys
 import os
@@ -17,24 +16,27 @@ import pprint
 #import pickle
 from functools import partial
 
-#import PyQt5.QtGui
+# PS = False
 
-PS = False
+# if PS:
+#     from PySide import QtCore
+#     from PySide import QtGui
+# else:
+#     import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
+#     sip.setapi('QDate', 2)
+#     sip.setapi('QDateTime', 2)
+#     sip.setapi('QString', 2)
+#     sip.setapi('QtextStream', 2)
+#     sip.setapi('Qtime', 2)
+#     sip.setapi('QUrl', 2)
+#     sip.setapi('QVariant', 2)
+#     from PyQt4 import QtCore
+#     from PyQt4 import QtGui
 
-if PS:
-    from PySide import QtCore
-    from PySide import QtGui
-else:
-    import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
-    sip.setapi('QDate', 2)
-    sip.setapi('QDateTime', 2)
-    sip.setapi('QString', 2)
-    sip.setapi('QtextStream', 2)
-    sip.setapi('Qtime', 2)
-    sip.setapi('QUrl', 2)
-    sip.setapi('QVariant', 2)
-    from PyQt4 import QtCore
-    from PyQt4 import QtGui
+from PyQt5.QtWidgets import ( QMainWindow, QMessageBox, QFileDialog, 
+                             QDockWidget, QWidget, QVBoxLayout )
+from PyQt5.QtCore import Qt, QCoreApplication
+from PyQt5 import QtGui 
 
 import resources_rc
 from tree.tree_view import DataTreeFrame
@@ -43,17 +45,17 @@ from utilities import make_uuid, make_timestamp, timestamp_to_timestring
 
 logger = logging.getLogger(__name__)
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QMainWindow):
     
     def __init__(self, parent=None):
-        super(MainWindow, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
         self.openfilename = None
         self.workdir = '.'
         self.open_files_list = []
 
-        self.app = QtCore.QCoreApplication.instance()
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.app = QCoreApplication.instance()
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.resize(800, 500)
         pixmap = QtGui.QPixmap(22, 22)
         pixmap.fill( QtGui.QColor(73, 201, 47) )
@@ -410,7 +412,11 @@ def icon_solid_fill(R=0, G=0, B=0, size=26):
 
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    from PyQt5.QtWidgets import QApplication
+    app = QApplication(sys.argv)
+    app.setApplicationName("Visinum-Data-Visualizer")
+    app.setOrganizationName("Qwilka")
+    app.setOrganizationDomain("qwilka.github.io")
     app.setStyle("plastique")
     mainwindow = MainWindow()
     mainwindow.show()

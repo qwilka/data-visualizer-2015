@@ -4,10 +4,6 @@ Copyright © 2020 Stephen McEntee
 Licensed under the MIT license. 
 See LICENSE file for details https://github.com/qwilka/data-visualizer-2015/blob/master/LICENSE
 """
-from __future__ import division
-from __future__ import print_function
-#from __future__ import unicode_literals # causes problems for drag/drop when tree contrains unicode characters (pickle problem)
-from future_builtins import *
 
 #import sys
 #import os
@@ -17,30 +13,34 @@ from future_builtins import *
 from functools import partial
 import logging
 
-PS = False
+# PS = False
 
-if PS:
-    from PySide import QtCore
-    from PySide import QtGui
-else:
-    import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
-    sip.setapi('QDate', 2)
-    sip.setapi('QDateTime', 2)
-    sip.setapi('QString', 2)
-    sip.setapi('QtextStream', 2)
-    sip.setapi('Qtime', 2)
-    sip.setapi('QUrl', 2)
-    sip.setapi('QVariant', 2)
-    from PyQt4 import QtCore
-    from PyQt4 import QtGui
+# if PS:
+#     from PySide import QtCore
+#     from PySide import QtGui
+# else:
+#     import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
+#     sip.setapi('QDate', 2)
+#     sip.setapi('QDateTime', 2)
+#     sip.setapi('QString', 2)
+#     sip.setapi('QtextStream', 2)
+#     sip.setapi('Qtime', 2)
+#     sip.setapi('QUrl', 2)
+#     sip.setapi('QVariant', 2)
+#     from PyQt4 import QtCore
+#     from PyQt4 import QtGui
 
-from nodes import make_dict_tree
-from tree_model import TreeModel
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import (QTreeView, QFrame, QVBoxLayout, 
+QAbstractItemView, QDataWidgetMapper, QMenu)
+
+from .nodes import make_dict_tree
+from .tree_model import TreeModel
 
 logger = logging.getLogger(__name__)
 
-class TreeView(QtGui.QTreeView):
-    tree_clicked = QtCore.pyqtSignal(str)
+class TreeView(QTreeView):
+    tree_clicked = pyqtSignal(str)
     # http://www.riverbankcomputing.com/pipermail/pyqt/2009-December/025379.html
     # http://pythonically.blogspot.ie/2009/11/drag-and-drop-in-pyqt.html
     def __init__(self, parent=None, listdict=None, mainwindow=None):
@@ -50,8 +50,8 @@ class TreeView(QtGui.QTreeView):
         # self.setAutoExpandDelay(400)
         self.setDragEnabled( True )
         self.setAcceptDrops( True )
-        self.setDragDropMode( QtGui.QAbstractItemView.InternalMove )
-        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.setDragDropMode( QAbstractItemView.InternalMove )
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.openMenu)
         self.mainwindow = mainwindow
         #self.tree_clicked.connect(mainwindow.vtkview.createBoundingBox)
@@ -71,7 +71,7 @@ class TreeView(QtGui.QTreeView):
     def on_tree_clicked(self, idx):
         if self.model():
             print("TREE CLICKED EVENT", idx)
-            data_ = self.model().data(idx, QtCore.Qt.UserRole)
+            data_ = self.model().data(idx, Qt.UserRole)
             if "UUID" in data_:
                 print(data_["UUID"])
                 self.tree_clicked.emit(data_["UUID"])
@@ -89,7 +89,7 @@ class TreeView(QtGui.QTreeView):
             ##--print(self.parent().parent().parent().parent())
             model.dataChanged.connect(self.data_changed)
 
-            self.dataMapper = QtGui.QDataWidgetMapper()
+            self.dataMapper = QDataWidgetMapper()
             self.dataMapper.setModel(model)
             #propseditor = self.parent().parent().parent().parent().propseditor
             ##--self.parent().parent().parent().parent().propseditor.setupDataMapper(self) # self.dataMapper
@@ -126,7 +126,7 @@ class TreeView(QtGui.QTreeView):
                 index = index.parent()
                 level += 1
         
-        menu = QtGui.QMenu()
+        menu = QMenu()
         
         nodeidx=self.indexAt(position)   # http://www.riverbankcomputing.com/pipermail/pyqt/2008-October/020720.html
         model = self.model()
@@ -182,13 +182,13 @@ class TreeView(QtGui.QTreeView):
             #model.removeRows(nodeidx.row()+1, 1, parentidx)  # not required????
 
 
-class DataTreeFrame(QtGui.QFrame):
+class DataTreeFrame(QFrame):
     def __init__(self, parent=None, listdict=None, mainwindow=None):
         super(DataTreeFrame, self).__init__(parent)
         #self.setAutoFillBackground(True)
         self.setStyleSheet("background-color:yellow;")
         self.treeview = TreeView(self, listdict, mainwindow=mainwindow)
-        layout = QtGui.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.treeview)
         self.setLayout(layout)
@@ -196,7 +196,7 @@ class DataTreeFrame(QtGui.QFrame):
 
 if __name__ == "__main__":
     import sys
-    from tree_node import make_dict_tree, treenode_from_dict  
+    from nodes import make_dict_tree, treenode_from_dict  
 
     dtree = {'First name': 'Maximus',
         'Last name': 'Mustermann',
@@ -246,7 +246,9 @@ if __name__ == "__main__":
     ]}
     dtree3 = [dtree1, dtree2]
 
-    app = QtGui.QApplication(sys.argv)
+    from PyQt5.QtWidgets import QApplication
+
+    app = QApplication(sys.argv)
     app.setStyle("plastique")
     treeView = DataTreeFrame(listdict=dtree3)
     treeView.show()

@@ -1,13 +1,8 @@
-# -*- coding: utf-8
 """
 Copyright © 2020 Stephen McEntee
 Licensed under the MIT license. 
 See LICENSE file for details https://github.com/qwilka/data-visualizer-2015/blob/master/LICENSE
 """
-from __future__ import division
-from __future__ import print_function
-#from __future__ import unicode_literals # causes problems for drag/drop when tree contrains unicode characters (pickle problem)
-from future_builtins import *
 
 #import sys
 #import os
@@ -17,35 +12,37 @@ import logging
 import pickle
 #from functools import partial
 
-PS = False
+# PS = False
 
-if PS:
-    from PySide import QtCore
-    from PySide import QtGui
-else:
-    import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
-    sip.setapi('QDate', 2)
-    sip.setapi('QDateTime', 2)
-    sip.setapi('QString', 2)
-    sip.setapi('QtextStream', 2)
-    sip.setapi('Qtime', 2)
-    sip.setapi('QUrl', 2)
-    sip.setapi('QVariant', 2)
-    from PyQt4 import QtCore
-    from PyQt4 import QtGui
+# if PS:
+#     from PySide import QtCore
+#     from PySide import QtGui
+# else:
+#     import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
+#     sip.setapi('QDate', 2)
+#     sip.setapi('QDateTime', 2)
+#     sip.setapi('QString', 2)
+#     sip.setapi('QtextStream', 2)
+#     sip.setapi('Qtime', 2)
+#     sip.setapi('QUrl', 2)
+#     sip.setapi('QVariant', 2)
+#     from PyQt4 import QtCore
+#     from PyQt4 import QtGui
 
-from nodes import Node, ListDictNode
+from PyQt5.QtCore import QAbstractItemModel, pyqtSignal, QModelIndex, Qt, QMimeData 
+
+from .nodes import Node, ListDictNode
 
 logger = logging.getLogger(__name__)
 
-class TreeModel(QtCore.QAbstractItemModel):
-    model_updated = QtCore.pyqtSignal(dict)
-    item_deleted = QtCore.pyqtSignal(dict)
+class TreeModel(QAbstractItemModel):
+    model_updated = pyqtSignal(dict)
+    item_deleted = pyqtSignal(dict)
 
     def __init__(self, root, parent=None):
         super(TreeModel, self).__init__(parent)
         self._rootNode = root
-        self.rootidx = QtCore.QModelIndex() ##
+        self.rootidx = QModelIndex() ##
         self.dirty = False
         
         def makedict(idx):  #  def makedict(idx, idx2):
@@ -99,15 +96,15 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         node = index.internalPointer()
 
-        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             return node.data(index.column())     ## node.row(index.column())
-        elif role == QtCore.Qt.UserRole:
+        elif role == Qt.UserRole:
             return eval(node.data(1))
 
-    def setData(self, index, value, role=QtCore.Qt.EditRole):
+    def setData(self, index, value, role=Qt.EditRole):
         """this method gets called when the user changes data"""
         if index.isValid():
-            if role == QtCore.Qt.EditRole:
+            if role == Qt.EditRole:
                 node = index.internalPointer()
                 node.setData(index.column(), value)
                 self.dataChanged.emit(index, index)
@@ -116,7 +113,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
     def headerData(self, section, orientation, role):
         """returns the name of the requested column"""
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             if section == 0:
                 return "Key"
             if section == 1:
@@ -124,22 +121,22 @@ class TreeModel(QtCore.QAbstractItemModel):
 
     def flags(self, index):
         """everything is editable"""
-        return (QtCore.Qt.ItemIsEnabled |
-                QtCore.Qt.ItemIsSelectable |
-                QtCore.Qt.ItemIsEditable |
-                QtCore.Qt.ItemIsDropEnabled |
-                QtCore.Qt.ItemIsDragEnabled)
+        return (Qt.ItemIsEnabled |
+                Qt.ItemIsSelectable |
+                Qt.ItemIsEditable |
+                Qt.ItemIsDropEnabled |
+                Qt.ItemIsDragEnabled)
 
     def supportedDropActions( self ):
         '''Items can be moved and copied (but we only provide an interface for moving items in this example.'''
-        return QtCore.Qt.MoveAction | QtCore.Qt.CopyAction
+        return Qt.MoveAction | Qt.CopyAction
 
     def parent(self, index):
         """returns the parent from given index"""
         node = self.getNode(index)
         parentNode = node.parent()
         if parentNode == self._rootNode:
-            return QtCore.QModelIndex()
+            return QModelIndex()
         return self.createIndex(parentNode.row(), 0, parentNode)
 
     def index(self, row, column, parent):
@@ -150,7 +147,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if childItem:
             return self.createIndex(row, column, childItem)
         else:
-            return QtCore.QModelIndex()
+            return QModelIndex()
 
     def getNode(self, index):
         """returns a Node() from given index"""
@@ -226,7 +223,7 @@ class TreeModel(QtCore.QAbstractItemModel):
     def mimeTypes( self ):
         '''The MimeType for the encoded data.'''
         if hasattr(QtCore, 'QStringList'):
-            types = QtCore.QStringList( 'application/x-pynode-item-instance' )
+            types = QStringList( 'application/x-pynode-item-instance' )
         else:
             types = ['application/x-pynode-item-instance']
         return types
@@ -241,7 +238,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         except:
             print("WARNING: no pickle!!")
             pass
-        mimedata = QtCore.QMimeData()
+        mimedata = QMimeData()
         mimedata.setData( 'application/x-pynode-item-instance', data )
         #print("pickle data=", data)
         return mimedata
@@ -272,7 +269,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
 if __name__ == "__main__":
     import sys
-    from tree_node import make_dict_tree, treenode_from_dict  
+    from nodes import make_dict_tree, treenode_from_dict  
 
     dtree = {'First name': 'Maximus',
         'Last name': 'Mustermann',
@@ -322,9 +319,12 @@ if __name__ == "__main__":
     ]}
     dtree3 = [dtree1, dtree2]
 
-    app = QtGui.QApplication(sys.argv)
+    from PyQt5.QtWidgets import QApplication
+    from PyQt5.QtWidgets import QTreeView
+
+    app = QApplication(sys.argv)
     app.setStyle("plastique")
-    treeView = QtGui.QTreeView()
+    treeView = QTreeView()
     treeView.show()
     treenodes = treenode_from_dict(dtree)
     #treenodes = make_dict_tree(dtree3)
