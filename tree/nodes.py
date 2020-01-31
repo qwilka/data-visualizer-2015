@@ -77,7 +77,8 @@ class Node:
                 #self._name = str(value.toPyObject())
                 self._name = str(value)
             else:
-                self._name = unicode(value)  
+                #self._name = unicode(value) 
+                self._name = str(value) 
         if colidx is 1:
             #self._data[0] = str(value.toPyObject())
             self._data[0] = str(value)
@@ -131,7 +132,8 @@ class ListDictNode(Node):
                 #self._name = str(value.toPyObject())
                 self._name = str(value)  
             else:
-                self._name = unicode(value)
+                #self._name = unicode(value)
+                self._name = str(value)
                 #self._data["name"] = str(value)       
         if column is 1:
             self._data = eval(value)

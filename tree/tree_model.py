@@ -134,7 +134,13 @@ class TreeModel(QAbstractItemModel):
     def parent(self, index):
         """returns the parent from given index"""
         node = self.getNode(index)
+        # if not node:
+        #     print("node=", node)
+        #     return False
         parentNode = node.parent()
+        if not parentNode:
+            print("parentNode=", parentNode)
+            parentNode = self._rootNode
         if parentNode == self._rootNode:
             return QModelIndex()
         return self.createIndex(parentNode.row(), 0, parentNode)

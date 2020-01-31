@@ -6,13 +6,16 @@ pyrcc5 -o resources_rc.py resources_rc.qrc
 https://medium.com/@ramrajchandradevan/python-init-py-modular-imports-81b746e58aae
 https://stackoverflow.com/questions/5286210/is-there-a-way-to-access-parent-modules-in-python
 
-tutorials
-=========
+PyQt5 docs tutorials
+======================
 https://www.riverbankcomputing.com/static/Docs/PyQt5/index.html
 https://doc.qt.io/qt-5/index.html
 http://zetcode.com/gui/pyqt5/
 https://pythonspot.com/pyqt5/
 https://www.tutorialspoint.com/pyqt/index.htm
+http://www.yasinuludag.com/blog/?p=98  PyQt model-view video tutorials
+https://www.youtube.com/view_play_list?p=8B63F2091D787896  PyQT4 MVC tutorial series
+
 
 
 VTK

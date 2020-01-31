@@ -1,8 +1,8 @@
 # data-visualizer-2015
 
-This is an old data visualization app from ~2015 that uses PyQt and VTK.
+This is an old incomplete data visualization app from ~2015 that uses PyQt and VTK.
 
-Requires Python 3.4+, PyQt, vtk
+Requires Python 3.4+, PyQt5, vtk
 
 setup.py not available currently
 

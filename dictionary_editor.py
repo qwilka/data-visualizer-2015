@@ -1,8 +1,4 @@
-# -*- coding: utf-8
-from __future__ import division
-from __future__ import print_function
-#from __future__ import unicode_literals # causes problems for drag/drop when tree contrains unicode characters (pickle problem)
-from future_builtins import *
+
 
 import sys
 import os
@@ -12,27 +8,16 @@ import pprint
 #from functools import partial
 
 
-PS = False
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QTextEdit, QGroupBox, 
+    QFormLayout, QLabel, QLineEdit, QScrollArea, QVBoxLayout, QSplitter,
+    QAction, QFileDialog)
+from PyQt5 import QtGui 
+from PyQt5.QtCore import Qt   #, QCoreApplication
 
-if PS:
-    from PySide import QtCore
-    from PySide import QtGui
-else:
-    import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
-    sip.setapi('QDate', 2)
-    sip.setapi('QDateTime', 2)
-    sip.setapi('QString', 2)
-    sip.setapi('QtextStream', 2)
-    sip.setapi('Qtime', 2)
-    sip.setapi('QUrl', 2)
-    sip.setapi('QVariant', 2)
-    from PyQt4 import QtCore
-    from PyQt4 import QtGui
-
-from tree_view import DataTreeFrame
+from tree.tree_view import DataTreeFrame
 
 
-class PropsEditor(QtGui.QWidget):
+class PropsEditor(QWidget):
 
     def __init__(self, parent=None):
         super(PropsEditor, self).__init__(parent)
@@ -40,17 +25,17 @@ class PropsEditor(QtGui.QWidget):
         self.setupLayout()
 
     def setupLayout(self):
-        groupbox = QtGui.QGroupBox('edit data')
-        formlayout = QtGui.QFormLayout()
-        self.label1 = QtGui.QLabel('item data')
-        self.lineedit1 = QtGui.QLineEdit("no data here")
+        groupbox = QGroupBox('edit data')
+        formlayout = QFormLayout()
+        self.label1 = QLabel('item data')
+        self.lineedit1 = QLineEdit("no data here")
         formlayout.addRow(self.label1, self.lineedit1)
         groupbox.setLayout(formlayout)
-        scroll = QtGui.QScrollArea()
+        scroll = QScrollArea()
         scroll.setWidget(groupbox)
         scroll.setWidgetResizable(True)
         #scroll.setFixedHeight(400)
-        layout = QtGui.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(scroll)
         self.setLayout(layout)
@@ -84,16 +69,16 @@ class PropsEditor(QtGui.QWidget):
                 self.clearLayout(child.layout())"""
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QMainWindow):
     
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, data=None):
         super(MainWindow, self).__init__(parent)
         self.parent = parent
         self.openfilename = None
         self.workingdir = '.'
         self.open_files_list = []
 
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WA_DeleteOnClose)
         #self.setMinimumSize(500, 300)
         self.resize(700, 500)
         pixmap = QtGui.QPixmap(22, 22)
@@ -102,17 +87,17 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowTitle( ("DictEd - {}").format(self.openfilename) ) 
 
         self.datatree = DataTreeFrame(mainwindow=self)    
-        self.viewframe = QtGui.QTextEdit()
+        self.viewframe = QTextEdit()
         self.propseditor = PropsEditor(self)
         ##self.dataTree.rejected.connect(self.dataTreePos)
         ##self.dataTree.hide()
 
-        vsplitter = QtGui.QSplitter(QtCore.Qt.Vertical)
+        vsplitter = QSplitter(Qt.Vertical)
         vsplitter.addWidget(self.datatree)
         vsplitter.addWidget(self.propseditor)
         vsplitter.setSizes ([250, 250])
         vsplitter.setStretchFactor(1, 1)
-        hsplitter = QtGui.QSplitter(QtCore.Qt.Horizontal)
+        hsplitter = QSplitter(Qt.Horizontal)
         hsplitter.addWidget(vsplitter)
         hsplitter.addWidget(self.viewframe)
         hsplitter.setStretchFactor(1, 10)
@@ -121,6 +106,10 @@ class MainWindow(QtGui.QMainWindow):
         
         self.createActions()
         self.createMenuBar()
+        if data:
+            self.addTree(data)
+        # else:
+        #     self.addTree({})
         
 
     def treeview_data_changed(self, newdata):
@@ -143,26 +132,26 @@ class MainWindow(QtGui.QMainWindow):
         viewMenu.addAction(self.showTreeAct)"""
 
     def createActions(self):
-        self.quitAct = QtGui.QAction(
+        self.quitAct = QAction(
                 "&Quit", self, shortcut=QtGui.QKeySequence.Quit,
                 statusTip="Quit the application", triggered=self.close)
                 
-        self.openFileAct = QtGui.QAction(                                 
+        self.openFileAct = QAction(                                 
                 "open file", self, shortcut=QtGui.QKeySequence.Open,
                 statusTip="Open a PLY file", triggered=self.openFile)
 
-        self.saveFileAct = QtGui.QAction(                         
+        self.saveFileAct = QAction(                         
                 "save", self, shortcut=QtGui.QKeySequence.Save,
                 statusTip="save current state", triggered=self.saveFile)
 
-        self.closeFileAct = QtGui.QAction(                         
+        self.closeFileAct = QAction(                         
                 "close", self, shortcut=QtGui.QKeySequence.Close,
                 statusTip="close current file after saving", triggered=self.closeFile)
 
 
     def openFile(self, fpath=None):
         if not fpath:
-            fpath = QtGui.QFileDialog.getOpenFileName(self, 'Open file', 
+            fpath = QFileDialog.getOpenFileName(self, 'Open file', 
                     self.workingdir, "JSON (*.json);;All files (*.*)")
             if isinstance(fpath, tuple):  # possible bug in pyside
                 fpath = str(fpath[0])
@@ -186,9 +175,11 @@ class MainWindow(QtGui.QMainWindow):
         model = self.datatree.treeview.model()
         filename = self.openfilename
         if not filename or not os.path.isfile(filename):
-            fpath = QtGui.QFileDialog.getSaveFileName(self, 'specify file to save', 
+            fpath = QFileDialog.getSaveFileName(self, 'specify file to save', 
                 self.workingdir, "JSON (*.json);;All files (*.*)")
             print(type(fpath), fpath)
+            if not os.path.isdir(os.path.dirname(fpath[0])):
+                return False
             if isinstance(fpath, tuple):
                 fpath = str(fpath[0])
             else:
@@ -271,9 +262,13 @@ if __name__ == '__main__':
     {"name":"nep5"}]} 
     ]}
     dtree3 = [dtree1, dtree2]
-    app = QtGui.QApplication(sys.argv)
+
+    from PyQt5.QtWidgets import QApplication
+
+    app = QApplication(sys.argv)
     app.setStyle("plastique")  
-    mainwindow =  MainWindow()     
+    mainwindow =  MainWindow(data=dtree3) 
+    #mainwindow =  MainWindow()    
     mainwindow.show()
     #treeNode = treenode_from_dict(dict_)
     ##treeNode = make_listdict_tree(dtree2)
