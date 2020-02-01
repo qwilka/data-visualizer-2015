@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 """
 Copyright © 2020 Stephen McEntee
 Licensed under the MIT license. 
@@ -9,37 +8,22 @@ import sys
 import os
 import json
 
-
-PS = False
-
-if PS:
-    from PySide import QtCore
-    from PySide import QtGui
-else:
-    import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
-    sip.setapi('QDate', 2)
-    sip.setapi('QDateTime', 2)
-    sip.setapi('QString', 2)
-    sip.setapi('QtextStream', 2)
-    sip.setapi('Qtime', 2)
-    sip.setapi('QUrl', 2)
-    sip.setapi('QVariant', 2)
-    from PyQt4 import QtCore
-    from PyQt4 import QtGui
+from PyQt5.QtWidgets import (QTreeWidget, QTreeWidgetItem, QDialog, 
+    QVBoxLayout, QAbstractItemView )
+from PyQt5.QtCore import Qt
 
 
-
-class TreeDialog(QtGui.QDialog):
+class TreeDialog(QDialog):
     def __init__(self, parent=None, datadict=None):
         super(TreeDialog, self).__init__(parent)
         self.treeWidget = TreeWidget(self, datadict)
-        self.layout = QtGui.QVBoxLayout(self)
+        self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.treeWidget)
         self.setLayout(self.layout)
 
 
-class TreeWidget(QtGui.QTreeWidget):
+class TreeWidget(QTreeWidget):
     # http://www.riverbankcomputing.com/pipermail/pyqt/2009-December/025379.html
     # http://pythonically.blogspot.ie/2009/11/drag-and-drop-in-pyqt.html
     def __init__(self, parent=None, datadict=None):
@@ -60,23 +44,24 @@ class TreeWidget(QtGui.QTreeWidget):
 
     def tree_from_dict(self, datadict, rootname=None):
         if rootname:
-            root = QtGui.QTreeWidgetItem(self, 
-                            QtCore.QStringList(str(rootname))  ) 
-            root.setFlags(root.flags() | QtCore.Qt.ItemIsEditable)
-            root.setData(1, QtCore.Qt.UserRole, None)  # ref to location in dictionary
+            # https://www.howtobuildsoftware.com/index.php/how-do/byrj/python-python-3x-import-qstring-pyqt5-qstringlist-in-pyqt5
+            #root = QTreeWidgetItem(self, QtCore.QStringList(str(rootname))  ) 
+            root = QTreeWidgetItem(self, [str(rootname)]  ) 
+            root.setFlags(root.flags() | Qt.ItemIsEditable)
+            root.setData(1, Qt.UserRole, None)  # ref to location in dictionary
         else:
             root = self.invisibleRootItem() 
         def walk_dict_tree(parent, dict_, location=None):
             if not location: location = []
             location.append(0)
             for ii, childd in enumerate(dict_["_childs"]):
-                childitem = QtGui.QTreeWidgetItem(parent, 
+                childitem = QTreeWidgetItem(parent, 
                                 [ childd["name"] ])
-                childitem.setFlags(childitem.flags() | QtCore.Qt.ItemIsEditable)
+                childitem.setFlags(childitem.flags() | Qt.ItemIsEditable)
                 location[-1] = ii
-                #########childitem.setData(0, QtCore.Qt.UserRole, childd["name"])
-                childitem.setData(1, QtCore.Qt.UserRole, location)  # ref to location in dictionary
-                checkdata = childitem.data(1, QtCore.Qt.UserRole)
+                #########childitem.setData(0, Qt.UserRole, childd["name"])
+                childitem.setData(1, Qt.UserRole, location)  # ref to location in dictionary
+                checkdata = childitem.data(1, Qt.UserRole)
                 #print(checkdata, childd, checkdata is childd)
                 ####print(location, checkdata, checkdata.toPyObject())
                 if "_childs" in childd:
@@ -87,13 +72,13 @@ class TreeWidget(QtGui.QTreeWidget):
 
     def on_item_changed(self, item, col):
         #entry.setText(curr.text()) str(curr.text(0)),
-        #print( str(item.text(col)), item.data(0, QtCore.Qt.DisplayRole).toPyObject(), item.data(1, QtCore.Qt.UserRole).toPyObject() )
+        #print( str(item.text(col)), item.data(0, Qt.DisplayRole).toPyObject(), item.data(1, Qt.UserRole).toPyObject() )
         parent = self.datadict
-        #location = item.data(1, QtCore.Qt.UserRole).toPyObject()
-        location = item.data(1, QtCore.Qt.UserRole)
+        #location = item.data(1, Qt.UserRole).toPyObject()
+        location = item.data(1, Qt.UserRole)
         if col != 0 or not location:
             return    # col=1 means it's drag-drop event
-        ####name = item.data(0, QtCore.Qt.UserRole).toPyObject()
+        ####name = item.data(0, Qt.UserRole).toPyObject()
         #'print(str(item.text(col)),  location, name, " col= ", col)
         for ii, row in enumerate(location): 
             parent = parent["_childs"][row]
@@ -104,10 +89,10 @@ class TreeWidget(QtGui.QTreeWidget):
             
     def dropEvent(self, event):
         if event.source() == self:
-            QtGui.QAbstractItemView.dropEvent(self, event)
+            QAbstractItemView.dropEvent(self, event)
 
     def dropMimeData(self, parent, row, data, action):
-        if action == QtCore.Qt.MoveAction:
+        if action == Qt.MoveAction:
             return self.moveSelection(parent, row)
         return False
 
@@ -129,12 +114,12 @@ class TreeWidget(QtGui.QTreeWidget):
             if item is None or item.parent() is None:
                 tomove = self.takeTopLevelItem(index.row())
                 taken.append(tomove)
-                location = tomove.data(1, QtCore.Qt.UserRole).toPyObject()
+                location = tomove.data(1, Qt.UserRole).toPyObject()
                 self.taken_datadict[tuple(location)] = self.pop_child_from_datadict(location)
             else:
                 tomove = item.parent().takeChild(index.row())
                 taken.append(tomove)
-                location = tomove.data(1, QtCore.Qt.UserRole).toPyObject()
+                location = tomove.data(1, Qt.UserRole).toPyObject()
                 self.taken_datadict[tuple(location)] = self.pop_child_from_datadict(location)
         # insert the selected items at their new positions
         while taken:
@@ -195,14 +180,14 @@ class TreeWidget(QtGui.QTreeWidget):
         for ii in range( parent.childCount()):
             location[-1] = ii
             child = parent.child(ii)
-            old_location = child.data(1, QtCore.Qt.UserRole).toPyObject()
+            old_location = child.data(1, Qt.UserRole).toPyObject()
             #if location != old_location:
             if tuple(old_location) in self.taken_datadict:
                 ##print("removing ", old_location, " from taken_datadict ", self.taken_datadict)
                 self.insert_child_into_datadict( location, 
                            self.taken_datadict.pop(tuple(old_location))  )
-            child.setData(1, QtCore.Qt.UserRole, location)
-            ##print(child.data(1, QtCore.Qt.UserRole).toPyObject())
+            child.setData(1, Qt.UserRole, location)
+            ##print(child.data(1, Qt.UserRole).toPyObject())
             if child.childCount():
                 location.append(0)
                 self.walk_tree_widget(child, location=location)
@@ -213,12 +198,13 @@ class TreeWidget(QtGui.QTreeWidget):
 
 
 if __name__ == '__main__':
+    from PyQt5.QtWidgets import QApplication, QFileDialog
     import pprint
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     if True:
         dict_ = {"name":"rootLevel", "_childs":[{"name":"child10"},{"name":"child20"},{"name":"child1"}, {"name":"child2"}, {"name":"child3", "_childs":[{"name":"child4"}, {"name":"child5"}]} ]}
     else:
-        fpath = QtGui.QFileDialog.getOpenFileName(None, 'Open file', 
+        fpath = QFileDialog.getOpenFileName(None, 'Open file', 
                         '.', "JSON (*.json);;All files (*.*)")
         with open(str(fpath), 'r') as jfile:
             dict_ = json.load(jfile)

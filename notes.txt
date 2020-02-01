@@ -2,6 +2,7 @@
 pyrcc5 -o resources_rc.py resources_rc.qrc
 
 /home/develop/Downloads/data_old/atest_pointcoulds/test_3Dviz
+/home/develop/engineering/src/scratch/visinum_20150902_archive_old_version
 
 https://medium.com/@ramrajchandradevan/python-init-py-modular-imports-81b746e58aae
 https://stackoverflow.com/questions/5286210/is-there-a-way-to-access-parent-modules-in-python

@@ -1,37 +1,13 @@
-# -*- coding: utf-8
 """
 Copyright © 2020 Stephen McEntee
 Licensed under the MIT license. 
 See LICENSE file for details https://github.com/qwilka/data-visualizer-2015/blob/master/LICENSE
 """
-from __future__ import division
-from __future__ import print_function
-#from __future__ import unicode_literals
-from future_builtins import *
-
 import sys
 import os
 import json
 
 
-PS = False
-
-if PS:
-    from PySide import QtCore
-    from PySide import QtGui
-else:
-    import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
-    sip.setapi('QDate', 2)
-    sip.setapi('QDateTime', 2)
-    sip.setapi('QString', 2)
-    sip.setapi('QtextStream', 2)
-    sip.setapi('Qtime', 2)
-    sip.setapi('QUrl', 2)
-    sip.setapi('QVariant', 2)
-    from PyQt4 import QtCore
-    from PyQt4 import QtGui
-#from PyQt4 import QtCore
-#from PyQt4 import QtGui
 
 from vtkframe import VtkQtFrame
 
@@ -372,7 +348,7 @@ class visinumVtkViewer(QtGui.QMainWindow):
 if __name__ == '__main__':
     # test main window visinumVtkViewer
     if True:
-        app = QtGui.QApplication(sys.argv)
+        app = QApplication(sys.argv)
         app.setStyle("plastique")  
         mainwindow =  visinumVtkViewer()     
         mainwindow.show()
@@ -381,7 +357,7 @@ if __name__ == '__main__':
     # test TreeWidget
     if False:
         import pprint
-        app = QtGui.QApplication(sys.argv)
+        app = QApplication(sys.argv)
         if True:
             dict_ = {"name":"rootLevel", "_childs":[{"name":"child10"},{"name":"child20"},{"name":"child1"}, {"name":"child2"}, {"name":"child3", "_childs":[{"name":"child4"}, {"name":"child5"}]} ]}
         else:

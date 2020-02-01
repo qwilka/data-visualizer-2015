@@ -4,39 +4,22 @@ Copyright © 2020 Stephen McEntee
 Licensed under the MIT license. 
 See LICENSE file for details https://github.com/qwilka/data-visualizer-2015/blob/master/LICENSE
 """
-from __future__ import division
-from __future__ import print_function
-#from __future__ import unicode_literals
-from future_builtins import *
-
 import sys
 import os
 import json
 
-PS = False
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QTextEdit, QGroupBox, 
+    QFormLayout, QLabel, QLineEdit, QScrollArea, QVBoxLayout, QSplitter,
+    QAction, QFileDialog)
+from PyQt5 import QtGui 
+from PyQt5.QtCore import Qt   #, QCoreApplication
 
-if PS:
-    from PySide import QtCore
-    from PySide import QtGui
-else:
-    import sip    # http://cyrille.rossant.net/making-pyqt4-pyside-and-ipython-work-together/
-    sip.setapi('QDate', 2)
-    sip.setapi('QDateTime', 2)
-    sip.setapi('QString', 2)
-    sip.setapi('QtextStream', 2)
-    sip.setapi('Qtime', 2)
-    sip.setapi('QUrl', 2)
-    sip.setapi('QVariant', 2)
-    from PyQt4 import QtCore
-    from PyQt4 import QtGui
-#from PyQt4 import QtCore
-#from PyQt4 import QtGui
 
 from vtkframe import VtkQtFrame
 from tree_widget import TreeWidget
 
 
-class visinumVtkViewer(QtGui.QMainWindow):
+class visinumVtkViewer(QMainWindow):
     
     def __init__(self, parent=None, filepath=None):
         super(visinumVtkViewer, self).__init__(parent)
@@ -45,7 +28,7 @@ class visinumVtkViewer(QtGui.QMainWindow):
         self.workingdir = '.'
         self.open_files_list = []
 
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WA_DeleteOnClose)
         #self.setMinimumSize(500, 300)
         self.resize(700, 500)
         pixmap = QtGui.QPixmap(22, 22)
@@ -58,10 +41,10 @@ class visinumVtkViewer(QtGui.QMainWindow):
         ##self.dataTree.rejected.connect(self.dataTreePos)
         ##self.dataTree.hide()
 
-        vsplitter = QtGui.QSplitter(QtCore.Qt.Vertical)
+        vsplitter = QSplitter(Qt.Vertical)
         vsplitter.addWidget(self.dataTree)
-        vsplitter.addWidget(QtGui.QTextEdit())
-        hsplitter = QtGui.QSplitter(QtCore.Qt.Horizontal)
+        vsplitter.addWidget(QTextEdit())
+        hsplitter = QSplitter(Qt.Horizontal)
         hsplitter.addWidget(vsplitter)
         hsplitter.addWidget(self.vtkframe)
         self.setCentralWidget(hsplitter)
@@ -98,37 +81,37 @@ class visinumVtkViewer(QtGui.QMainWindow):
         viewMenu.addAction(self.showTreeAct)
 
     def createActions(self):
-        self.quitAct = QtGui.QAction(
+        self.quitAct = QAction(
                 "&Quit", self, shortcut=QtGui.QKeySequence.Quit,
                 statusTip="Quit the application", triggered=self.close)
                 
-        self.openFileAct = QtGui.QAction(                                 
+        self.openFileAct = QAction(                                 
                 "open file", self, shortcut=QtGui.QKeySequence.Open,
                 statusTip="Open a PLY file", triggered=self.openFile)
 
-        self.importFileAct = QtGui.QAction(                           
+        self.importFileAct = QAction(                           
                 "Import PLY", self, shortcut="i",
                 statusTip="Import a PLY file", triggered=self.importFile)
 
-        self.showTreeAct = QtGui.QAction(                         
+        self.showTreeAct = QAction(                         
                 "show tree", self, shortcut="Ctrl+i",
                 statusTip="show data tree", triggered=self.showDataTree)
 
-        self.addTriadAct = QtGui.QAction(               
+        self.addTriadAct = QAction(               
                 "add axes triad", self, shortcut="Ctrl+t",
                 statusTip="add axes triad", triggered=self.vtkframe.addAxes)
 
-        self.viewPlanAct = QtGui.QAction(                    
+        self.viewPlanAct = QAction(                    
                 "plan view", self, shortcut="1",
                 statusTip="view in plan (from above)", triggered=self.vtkframe.viewPlan)
 
-        self.saveStateAct = QtGui.QAction(                         
+        self.saveStateAct = QAction(                         
                 "save", self, shortcut=QtGui.QKeySequence.Save,
                 statusTip="save current state", triggered=self.saveState)
 
     def openFile(self, fpath=None):
         if not fpath:
-            fpath = QtGui.QFileDialog.getOpenFileName(self, 'Open file', 
+            fpath = QFileDialog.getOpenFileName(self, 'Open file', 
                     self.workingdir, "JSON (*.json);;All files (*.*)")
             fpath = str(fpath)
             self.workingdir = os.path.dirname(fpath)
@@ -143,7 +126,7 @@ class visinumVtkViewer(QtGui.QMainWindow):
 
     def importFile(self, fpath=None):
         if not fpath:
-            fpath = QtGui.QFileDialog.getOpenFileName(self, 'Open file', 
+            fpath = QFileDialog.getOpenFileName(self, 'Open file', 
                     self.workingdir, "PLY files (*.ply);;All files (*.*)")
             fpath = str(fpath)
             self.workingdir = os.path.dirname(fpath)
@@ -160,7 +143,7 @@ class visinumVtkViewer(QtGui.QMainWindow):
 
     def saveState(self):
         if not self.filename or not os.path.isfile(self.filename):
-            fpath = QtGui.QFileDialog.getSaveFileName(self, 'specify file to save', 
+            fpath = QFileDialog.getSaveFileName(self, 'specify file to save', 
                 self.workingdir, "JSON (*.json);;All files (*.*)")
             fpath = str(fpath)
             self.filename = fpath
@@ -198,12 +181,13 @@ class visinumVtkViewer(QtGui.QMainWindow):
 
 
 if __name__ == '__main__':
-    # test main window visinumVtkViewer
-    if True:
-        app = QtGui.QApplication(sys.argv)
-        app.setStyle("plastique")  
-        mainwindow =  visinumVtkViewer()     
-        mainwindow.show()
-        sys.exit(app.exec_())
+
+    from PyQt5.QtWidgets import QApplication
+
+    app = QtGui.QApplication(sys.argv)
+    app.setStyle("plastique")  
+    mainwindow =  visinumVtkViewer()     
+    mainwindow.show()
+    sys.exit(app.exec_())
 
 
